@@ -5,7 +5,7 @@
 // 🔑 Register new user
 async function registerUser(email, password) {
   try {
-    const res = await fetch("http://localhost:3000/register", {
+    const API_URL = "https://your-backend-service-name.onrender.com", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -57,7 +57,7 @@ function logoutUser() {
 // 🏠 Fetch homes from backend
 async function loadHomes() {
   try {
-    const res = await fetch("http://localhost:3000/homes");
+    const res = await fetch(`${API_URL}/login`, { ... });
     const data = await res.json();
     displayHomes(data);
   } catch (err) {
