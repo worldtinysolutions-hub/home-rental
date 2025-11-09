@@ -125,4 +125,129 @@ function runBackgroundChecks(homeId) {
 // 💳 Payment page
 function goToPayment(homeId) {
   const home = homes.find((h) => h.id === homeId);
-  if (!hom
+  if (!home) return;
+
+  const total = home.price * 2; // advance + 1 month rent = 24000 kr
+  const container = document.getElementById("homeSection");
+
+  container.innerHTML = `
+    <h2>Payment for ${home.title}</h2>
+    <p>Total due: <strong>${total.toLocaleString()} kr</strong></p>
+
+    <form id="paymentForm" onsubmit="submitPayment(event, ${homeId})">
+      <label>Name on Card:</label>
+      <input required placeholder="Full Name" />
+      <label>Card Number:</label>
+      <input required maxlength="16" placeholder="1234 5678 9012 3456" />
+      <label>Expiry Date:</label>
+      <input required placeholder="MM/YY" maxlength="5" />
+      <label>CVV:</label>
+      <input required maxlength="3" placeholder="123" />
+      <button type="submit">Pay Now</button>
+    </form>
+  `;
+}
+
+// 💰 Submit payment
+function submitPayment(event, homeId) {
+  event.preventDefault();
+  const container = document.getElementById("homeSection");
+
+  container.innerHTML = `
+    <h2>Processing Payment...</h2>
+    <p>Please wait...</p>
+  `;
+
+  setTimeout(() => {
+    alert("🎉 The home is now rented out to you. All details will be sent via email.");
+    showHomePage();
+  }, 2500);
+}
+
+// 🔐 Register new user
+async function registerUser(email, password) {
+  try {
+    const res = await fetch(`${API_URL}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert("✅ Registered successfully!");
+    } else {
+      alert("❌ Registration failed. Please try again.");
+    }
+  } catch (err) {
+    console.error("Registration error:", err);
+    alert("⚠️ Server error during registration.");
+  }
+}
+
+// 🔑 Login existing user
+async function loginUser(email, password) {
+  try {
+    console.log("➡️ Sending login request to:", `${API_URL}/login`);
+
+    const res = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Server error response:", text);
+      alert("⚠️ Server responded with an error. Check backend logs.");
+      return;
+    }
+
+    const data = await res.json();
+    console.log("✅ Response data:", data);
+
+    if (data.success) {
+      alert("✅ Login successful!");
+      localStorage.setItem("loggedInUser", email);
+      showHomePage();
+    } else {
+      alert("❌ " + (data.error || "Login failed"));
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("⚠️ Server error during login.");
+  }
+}
+
+// 🚪 Logout
+function logoutUser() {
+  localStorage.removeItem("loggedInUser");
+  document.getElementById("homeSection").style.display = "none";
+  document.getElementById("authSection").style.display = "block";
+}
+
+// 🏠 Show homepage
+function showHomePage() {
+  document.getElementById("authSection").style.display = "none";
+  const homeSection = document.getElementById("homeSection");
+  homeSection.style.display = "block";
+  homeSection.innerHTML = `
+    <div class="user-bar">
+      <span>Welcome, ${localStorage.getItem("loggedInUser") || "User"} 👋</span>
+      <button onclick="logoutUser()">Logout</button>
+    </div>
+    <h2>Available Homes</h2>
+    <div id="homes" class="home-grid"></div>
+  `;
+  displayHomes(homes);
+}
+
+// 🧭 Initialize
+document.addEventListener("DOMContentLoaded", () => {
+  const user = localStorage.getItem("loggedInUser");
+  if (user) {
+    showHomePage();
+  } else {
+    document.getElementById("authSection").style.display = "block";
+  }
+});
