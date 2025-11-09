@@ -1,173 +1,11 @@
-// ✅ Set your backend URL (Render)
-const API_URL = "https://home-rental-dqv3.onrender.com";
+// ==========================================
+// DreamStay Frontend Logic (script.js)
+// ==========================================
 
-// 🏠 Property Data
-const homes = [
-  {
-    id: 1,
-    title: "Cozy Apartment in Gothenburg",
-    location: "Gothenburg, Sweden",
-    price: 12000,
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
-  },
-  {
-    id: 2,
-    title: "Modern Condo in Hisingen",
-    location: "Hisingen, Gothenburg, Sweden",
-    price: 12000,
-    image: "https://images.unsplash.com/photo-1615874959474-d609969a20ed",
-  },
-];
-
-// 🖼️ Display all homes
-function displayHomes(list) {
-  const container = document.getElementById("homes");
-  if (!container) return;
-
-  container.innerHTML = "";
-  list.forEach((home) => {
-    container.innerHTML += `
-      <div class="home" onclick="openHomeDetails(${home.id})">
-        <img src="${home.image}" alt="${home.title}" />
-        <div class="details">
-          <h3>${home.title}</h3>
-          <p>${home.location}</p>
-          <p><strong>${home.price.toLocaleString()} kr / month</strong></p>
-        </div>
-      </div>
-    `;
-  });
-}
-
-// 🔍 Search function
-function searchHomes() {
-  const searchInput = document.getElementById("searchInput");
-  if (!searchInput) return;
-
-  const query = searchInput.value.toLowerCase().trim();
-  const filtered = homes.filter(
-    (home) =>
-      home.title.toLowerCase().includes(query) ||
-      home.location.toLowerCase().includes(query)
-  );
-
-  displayHomes(filtered.length ? filtered : homes);
-}
-
-// 🏡 Open home details
-function openHomeDetails(id) {
-  const home = homes.find((h) => h.id === id);
-  if (!home) return;
-
-  const container = document.getElementById("homeSection");
-  container.innerHTML = `
-    <div class="user-bar">
-      <button onclick="showHomePage()">⬅ Back to Listings</button>
-    </div>
-    <div class="home-details">
-      <img src="${home.image}" alt="${home.title}" style="width:100%;max-width:600px;border-radius:10px;">
-      <h2>${home.title}</h2>
-      <p>${home.location}</p>
-      <p><strong>${home.price.toLocaleString()} kr / month</strong></p>
-      <button onclick="startApplication(${home.id})">Apply Now</button>
-    </div>
-  `;
-}
-
-// 🧾 Application process
-function startApplication(homeId) {
-  const home = homes.find((h) => h.id === homeId);
-  if (!home) return;
-
-  const container = document.getElementById("homeSection");
-  container.innerHTML = `
-    <h2>Apply for ${home.title}</h2>
-    <p>Please enter your Swedish personal number (12 digits):</p>
-    <input id="personalNumber" placeholder="YYYYMMDDXXXX" maxlength="12" />
-    <button onclick="runBackgroundChecks(${home.id})">Check Background</button>
-  `;
-}
-
-// 🔎 Simulate background checks
-function runBackgroundChecks(homeId) {
-  const pnr = document.getElementById("personalNumber").value.trim();
-  if (pnr.length !== 12) {
-    alert("⚠️ Please enter a valid 12-digit personal number.");
-    return;
-  }
-
-  const container = document.getElementById("homeSection");
-  container.innerHTML = `
-    <h2>Running background checks...</h2>
-    <p>Please wait a moment...</p>
-  `;
-
-  setTimeout(() => {
-    // Simulate one user failing background check
-    if (pnr === "199001011234") {
-      container.innerHTML = `
-        <h2>Background Check Result</h2>
-        <p>❌ Criminal background check failed.</p>
-        <p>UC background check: ✅ Successful</p>
-        <button onclick="showHomePage()">Back to Listings</button>
-      `;
-    } else {
-      container.innerHTML = `
-        <h2>Background Check Result</h2>
-        <p>✅ Criminal background check successful.</p>
-        <p>✅ UC background check successful.</p>
-        <button onclick="goToPayment(${homeId})">Next</button>
-      `;
-    }
-  }, 2500);
-}
-
-// 💳 Payment page
-function goToPayment(homeId) {
-  const home = homes.find((h) => h.id === homeId);
-  if (!home) return;
-
-  const total = home.price * 2; // advance + 1 month rent = 24000 kr
-  const container = document.getElementById("homeSection");
-
-  container.innerHTML = `
-    <h2>Payment for ${home.title}</h2>
-    <p>Total due: <strong>${total.toLocaleString()} kr</strong></p>
-
-    <form id="paymentForm" onsubmit="submitPayment(event, ${homeId})">
-      <label>Name on Card:</label>
-      <input required placeholder="Full Name" />
-      <label>Card Number:</label>
-      <input required maxlength="16" placeholder="1234 5678 9012 3456" />
-      <label>Expiry Date:</label>
-      <input required placeholder="MM/YY" maxlength="5" />
-      <label>CVV:</label>
-      <input required maxlength="3" placeholder="123" />
-      <button type="submit">Pay Now</button>
-    </form>
-  `;
-}
-
-// 💰 Submit payment
-function submitPayment(event, homeId) {
-  event.preventDefault();
-  const container = document.getElementById("homeSection");
-
-  container.innerHTML = `
-    <h2>Processing Payment...</h2>
-    <p>Please wait...</p>
-  `;
-
-  setTimeout(() => {
-    alert("🎉 The home is now rented out to you. All details will be sent via email.");
-    showHomePage();
-  }, 2500);
-}
-
-// 🔐 Register new user
+// 🔑 Register new user
 async function registerUser(email, password) {
   try {
-    const res = await fetch(`${API_URL}/register`, {
+    const res = await fetch("http://localhost:3000/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -175,9 +13,9 @@ async function registerUser(email, password) {
 
     const data = await res.json();
     if (data.success) {
-      alert("✅ Registered successfully!");
+      alert("✅ Registered successfully! You can now log in.");
     } else {
-      alert("❌ Registration failed. Please try again.");
+      alert("❌ " + (data.error || "Registration failed."));
     }
   } catch (err) {
     console.error("Registration error:", err);
@@ -185,31 +23,21 @@ async function registerUser(email, password) {
   }
 }
 
-// 🔑 Login existing user
+// 🔐 Login existing user
 async function loginUser(email, password) {
   try {
-    console.log("➡️ Sending login request to:", `${API_URL}/login`);
-
-    const res = await fetch(`${API_URL}/login`, {
+    const res = await fetch("http://localhost:3000/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("Server error response:", text);
-      alert("⚠️ Server responded with an error. Check backend logs.");
-      return;
-    }
-
     const data = await res.json();
-    console.log("✅ Response data:", data);
-
     if (data.success) {
-      alert("✅ Login successful!");
       localStorage.setItem("loggedInUser", email);
+      alert("✅ Login successful!");
       showHomePage();
+      await loadHomes();
     } else {
       alert("❌ " + (data.error || "Login failed"));
     }
@@ -219,35 +47,219 @@ async function loginUser(email, password) {
   }
 }
 
-// 🚪 Logout
+// 🚪 Logout user
 function logoutUser() {
   localStorage.removeItem("loggedInUser");
-  document.getElementById("homeSection").style.display = "none";
-  document.getElementById("authSection").style.display = "block";
+  alert("👋 You have logged out.");
+  showLoginPage();
 }
 
-// 🏠 Show homepage
+// 🏠 Fetch homes from backend
+async function loadHomes() {
+  try {
+    const res = await fetch("http://localhost:3000/homes");
+    const data = await res.json();
+    displayHomes(data);
+  } catch (err) {
+    console.error("Error loading homes:", err);
+    alert("⚠️ Could not load homes from server.");
+  }
+}
+
+// 🖼️ Display homes dynamically
+// 🏠 Property Data
+// 🏠 Property Data
+const homes = [
+  {
+    id: 1,
+    title: "Cozy Apartment in Gothenburg",
+    location: "Gothenburg, Sweden",
+    price: "12000",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
+  },
+  {
+    id: 2,
+    title: "Modern Condo in Hisingen",
+    location: "Hisingen, Gothenburg, Sweden",
+    price: "10800",
+    image: "https://images.unsplash.com/photo-1615874959474-d609969a20ed",
+  },
+];
+
+// === Display Homes ===
+function displayHomes(list) {
+  const container = document.getElementById("homes");
+  if (!container) return;
+
+  container.innerHTML = "";
+  list.forEach((home) => {
+    const div = document.createElement("div");
+    div.classList.add("home");
+    div.innerHTML = `
+      <img src="${home.image}" alt="${home.title}" />
+      <div class="details">
+        <h3>${home.title}</h3>
+        <p>${home.location}</p>
+        <p><strong>${home.price} kr / month</strong></p>
+      </div>
+    `;
+    div.onclick = () => openModal(home);
+    container.appendChild(div);
+  });
+}
+
+// === Open Property Modal ===
+function openModal(home) {
+  document.getElementById("propertyModal").style.display = "block";
+  document.getElementById("modalImage").src = home.image;
+  document.getElementById("modalTitle").innerText = home.title;
+  document.getElementById("modalLocation").innerText = home.location;
+  document.getElementById("modalPrice").innerText = `${home.price} kr / month`;
+
+  // store selected property for later (like during apply)
+  localStorage.setItem("selectedHome", JSON.stringify(home));
+}
+
+function closeModal() {
+  document.getElementById("propertyModal").style.display = "none";
+}
+
+// === Application Process ===
+function openApplication() {
+  document.getElementById("propertyModal").style.display = "none";
+  document.getElementById("applyModal").style.display = "block";
+}
+
+function closeApplyModal() {
+  document.getElementById("applyModal").style.display = "none";
+}
+
+// === Run Simulated Background Checks ===
+async function runBackgroundChecks() {
+  const pnr = document.getElementById("pnrInput").value.trim();
+  const resultDiv = document.getElementById("checkResult");
+
+  if (!/^[0-9]{12}$/.test(pnr)) {
+    resultDiv.innerHTML = "❌ Please enter a valid 12-digit personal number.";
+    resultDiv.style.color = "red";
+    return;
+  }
+
+  resultDiv.style.color = "#333";
+  resultDiv.innerHTML = `
+    <div class="spinner"></div>
+    <p>⏳ Running background checks...</p>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  `;
+
+  const fill = document.querySelector(".progress-fill");
+  let progress = 0;
+
+  const interval = setInterval(() => {
+    progress += 10;
+    fill.style.width = progress + "%";
+    if (progress >= 100) {
+      clearInterval(interval);
+      showCheckResult(pnr);
+    }
+  }, 300);
+}
+
+function showCheckResult(pnr) {
+  const resultDiv = document.getElementById("checkResult");
+
+  const failedPnr = "199001011234";
+
+  if (pnr === failedPnr) {
+    resultDiv.style.color = "red";
+    resultDiv.innerHTML = `
+      ❌ Criminal background check failed.<br>
+      ✅ UC background check successful.<br><br>
+      ⚠️ Your application cannot be processed further.
+    `;
+  } else {
+    resultDiv.style.color = "green";
+    resultDiv.innerHTML = `
+      ✅ Criminal background check successful.<br>
+      ✅ UC background check successful.<br><br>
+      🏡 Your application has been received!<br><br>
+      <button class="next-btn" onclick="goToPayment()">Next ➡️</button>
+    `;
+  }
+}
+
+// === Go to Payment Page ===
+function goToPayment() {
+  window.location.href = "payment.html";
+}
+
+// === Init ===
+document.addEventListener("DOMContentLoaded", () => {
+  displayHomes(homes);
+});
+
+
+// 🧭 Open home details (simple popup)
+// 🔍 Search homes
+const searchHomes = () => {
+  const query = document.getElementById("searchInput").value.toLowerCase().trim();
+  const cards = document.querySelectorAll(".home");
+
+  cards.forEach((card) => {
+    const title = card.querySelector("h3").textContent.toLowerCase();
+    const location = card.querySelector("p").textContent.toLowerCase();
+    card.style.display =
+      title.includes(query) || location.includes(query) ? "block" : "none";
+  });
+};
+
+// 🧭 Show/hide views
 function showHomePage() {
   document.getElementById("authSection").style.display = "none";
-  const homeSection = document.getElementById("homeSection");
-  homeSection.style.display = "block";
-  homeSection.innerHTML = `
-    <div class="user-bar">
-      <span>Welcome, ${localStorage.getItem("loggedInUser") || "User"} 👋</span>
-      <button onclick="logoutUser()">Logout</button>
-    </div>
-    <h2>Available Homes</h2>
-    <div id="homes" class="home-grid"></div>
-  `;
-  displayHomes(homes);
+  document.getElementById("homeSection").style.display = "block";
+  const user = localStorage.getItem("loggedInUser");
+  document.getElementById("welcomeMsg").textContent = `Welcome, ${user}!`;
+}
+
+function showLoginPage() {
+  document.getElementById("authSection").style.display = "block";
+  document.getElementById("homeSection").style.display = "none";
+  document.getElementById("welcomeMsg").textContent = "";
+}
+
+// 📍 Smooth navigation scroll
+function setupNavigation() {
+  document.querySelectorAll("nav a").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute("href"));
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  });
 }
 
 // 🧭 Initialize
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  setupNavigation();
+
+  // Add contact info
+  const contactSection = document.getElementById("contact");
+  if (contactSection) {
+    contactSection.innerHTML = `
+      <h2>Contact Us</h2>
+      <p>Have questions or need help finding a rental? We’re here to help.</p>
+      <p><strong>Contact Person:</strong> <br> World Tiny Solutions<br>
+      <a href="mailto:worldtinysolutions@gmail.com">worldtinysolutions@gmail.com</a></p>
+    `;
+  }
+
   const user = localStorage.getItem("loggedInUser");
   if (user) {
     showHomePage();
+    await loadHomes();
   } else {
-    document.getElementById("authSection").style.display = "block";
+    showLoginPage();
   }
 });
