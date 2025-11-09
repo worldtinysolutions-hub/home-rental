@@ -24,20 +24,20 @@ async function registerUser(email, password) {
 }
 
 // 🔐 Login existing user
+const API_URL = "https://your-backend-service-name.onrender.com";
+
 async function loginUser(email, password) {
   try {
-    const res = await fetch("http://localhost:3000/login", {
+    const res = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-
     const data = await res.json();
     if (data.success) {
-      localStorage.setItem("loggedInUser", email);
       alert("✅ Login successful!");
+      localStorage.setItem("loggedInUser", email);
       showHomePage();
-      await loadHomes();
     } else {
       alert("❌ " + (data.error || "Login failed"));
     }
@@ -46,6 +46,7 @@ async function loginUser(email, password) {
     alert("⚠️ Server error during login.");
   }
 }
+
 
 // 🚪 Logout user
 function logoutUser() {
